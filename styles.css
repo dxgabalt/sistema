@@ -1,0 +1,43 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+#scanner {
+    margin-bottom: 20px;
+}
+
+#camera {
+    max-width: 100%;
+}
+
+#scan-button {
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #0073e6;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+#scan-button:hover {
+    background-color: #0058a8;
+}
+
+#inventory {
+    text-align: left;
+}
+
+#product-form {
+    text-align: center;
+}
+
+input {
+    margin: 5px;
+    padding: 5px;
+}

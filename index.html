@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sistema de Gestión de Inventario</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <h1>Inventario</h1>
+    <div id="scanner">
+        <video id="camera" autoplay></video>
+        <button id="scan-button">Escanear Código de Barras</button>
+    </div>
+    <div id="inventory">
+        <!-- Aquí se mostrará la lista de productos -->
+    </div>
+    <div id="product-form">
+        <h2>Agregar/Editar Producto</h2>
+        <input type="text" id="product-name" placeholder="Nombre del producto">
+        <input type="number" id="product-quantity" placeholder="Cantidad">
+        <input type="number" id="product-price" placeholder="Precio">
+        <button id="add-product">Guardar Producto</button>
+    </div>
+    <script src="quagga.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
