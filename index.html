@@ -57,10 +57,12 @@
     </div>
     <div id="product-form">
         <h2>Agregar/Editar Producto</h2>
-        <input type="text" id="product-name" placeholder="Nombre del producto">
-        <input type="number" id="product-quantity" placeholder="Cantidad">
-        <input type="number" id="product-price" placeholder="Precio">
-        <button id="add-product">Guardar Producto</button>
+        <form id="product-form">
+            <input type="text" id="product-name" placeholder="Nombre del producto">
+            <input type="number" id="product-quantity" placeholder="Cantidad">
+            <input type="number" id="product-price" placeholder="Precio">
+            <button type="button" id="add-product">Guardar Producto</button>
+        </form>
     </div>
     <div id="search-filter">
         <input type="text" id="search" placeholder="Buscar por nombre o código de barras">
@@ -89,6 +91,7 @@
             const searchInput = document.getElementById("search");
             const filterButton = document.getElementById("filter");
             const exportDataButton = document.getElementById("export-data");
+            const productForm = document.getElementById("product-form");
 
             // Array para almacenar productos
             let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
@@ -131,9 +134,11 @@
                     manualBarcodeInput.value = "";
 
                     // Generar el código de barras y mostrarlo
-                    JsBarcode("#barcode", manualBarcode, {
+                    JsBarcode(`#barcode-${inventory.length - 1}`, manualBarcode, {
                         format: "CODE128",
-                        displayValue: true
+                        displayValue: true,
+                        width: 2,
+                        height: 40
                     });
                 }
             }
@@ -231,14 +236,18 @@
             scanner.addListener("scan", function (content) {
                 manualBarcodeInput.value = content;
             });
-            Instascan.Camera.getCameras().then(function (cameras) {
-                if (cameras.length > 0) {
-                    scanner.start(cameras[0]);
-                } else {
-                    console.error("No se encontraron cámaras disponibles.");
-                }
-            }).catch(function (error) {
-                console.error("Error al acceder a la cámara: " + error);
+
+            // Acceder a la cámara al hacer clic en el botón "Escanear Código de Barras"
+            scanButton.addEventListener("click", function () {
+                Instascan.Camera.getCameras().then(function (cameras) {
+                    if (cameras.length > 0) {
+                        scanner.start(cameras[0]);
+                    } else {
+                        console.error("No se encontraron cámaras disponibles.");
+                    }
+                }).catch(function (error) {
+                    console.error("Error al acceder a la cámara: " + error);
+                });
             });
 
             // Escuchar eventos de botones
@@ -247,32 +256,17 @@
             exportDataButton.addEventListener("click", exportData);
 
             // Escuchar eventos táctiles en lugar de eventos de clic
-if ('ontouchstart' in window) {
-    addProductButton.addEventListener("touchstart", addOrUpdateProduct);
-    deleteButtons.forEach((button) => {
-        button.addEventListener("touchstart", handleDelete);
-    });
-    editButtons.forEach((button) => {
-        button.addEventListener("touchstart", handleEdit);
-    });
-}
-
-// Escuchar evento "submit" para formularios en lugar de eventos de clic en botones
-document.getElementById("product-form").addEventListener("submit", function (e) {
-    e.preventDefault(); // Evita la recarga de la página
-    addOrUpdateProduct();
-});
-
-// Para la función de eliminar, asegúrate de que los botones de eliminar tengan una clase distinta
-// Ejemplo: <button class="delete-button" data-index="${index}">Eliminar</button>
-
-// Luego, escucha eventos táctiles en los botones de eliminar
-const deleteButtons = document.querySelectorAll(".delete-button");
-deleteButtons.forEach((button) => {
-    button.addEventListener("touchstart", handleDelete);
-});
-
-// Implementa el mismo enfoque para los botones de editar
+            if ('ontouchstart' in window) {
+                addProductButton.addEventListener("touchstart", addOrUpdateProduct);
+                const deleteButtons = document.querySelectorAll(".delete-button");
+                deleteButtons.forEach((button) => {
+                    button.addEventListener("touchstart", handleDelete);
+                });
+                const editButtons = document.querySelectorAll(".edit-button");
+                editButtons.forEach((button) => {
+                    button.addEventListener("touchstart", handleEdit);
+                });
+            }
 
             // Mostrar el inventario y el historial al cargar la página
             renderInventory(inventory);
