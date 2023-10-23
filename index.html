@@ -4,44 +4,11 @@
     <title>Sistema de Gestión de Inventario</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
-    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            text-align: center;
-            padding: 10px;
-        }
-        #scanner, #manual-entry, #inventory, #product-form, #search-filter, #history, #export {
-            padding: 10px;
-            border: 1px solid #ccc;
-            margin: 10px;
-            background: #f9f9f9;
-        }
-        #camera {
-            width: 100%;
-        }
-        input, button {
-            width: 100%;
-            margin: 5px 0;
-        }
-        #barcode, svg {
-            width: 100%;
-        }
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-    </style>
 </head>
 <body>
     <h1>Inventario</h1>
     <div id="scanner">
-        <video id="camera" autoplay></video>
+        <video id="camera" autoplay playsinline></video>
         <button id="scan-button">Escanear Código de Barras</button>
     </div>
     <div id="manual-entry">
@@ -57,12 +24,10 @@
     </div>
     <div id="product-form">
         <h2>Agregar/Editar Producto</h2>
-        <form id="product-form">
-            <input type="text" id="product-name" placeholder="Nombre del producto">
-            <input type="number" id="product-quantity" placeholder="Cantidad">
-            <input type="number" id="product-price" placeholder="Precio">
-            <button type="button" id="add-product">Guardar Producto</button>
-        </form>
+        <input type="text" id="product-name" placeholder="Nombre del producto">
+        <input type="number" id="product-quantity" placeholder="Cantidad">
+        <input type="number" id="product-price" placeholder="Precio">
+        <button id="add-product">Guardar Producto</button>
     </div>
     <div id="search-filter">
         <input type="text" id="search" placeholder="Buscar por nombre o código de barras">
@@ -91,7 +56,6 @@
             const searchInput = document.getElementById("search");
             const filterButton = document.getElementById("filter");
             const exportDataButton = document.getElementById("export-data");
-            const productForm = document.getElementById("product-form");
 
             // Array para almacenar productos
             let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
@@ -119,28 +83,16 @@
                         height: 40
                     });
                 });
-            }
 
-            // Función para generar un código de barras manualmente
-            function generateBarcodeManually() {
-                const manualBarcode = manualBarcodeInput.value;
-
-                if (manualBarcode) {
-                    // Agregar el código de barras a la lista de productos
-                    const product = { name: manualBarcode, quantity: 0, price: 0.00 };
-                    inventory.push(product);
-                    localStorage.setItem("inventory", JSON.stringify(inventory));
-                    renderInventory(inventory);
-                    manualBarcodeInput.value = "";
-
-                    // Generar el código de barras y mostrarlo
-                    JsBarcode(`#barcode-${inventory.length - 1}`, manualBarcode, {
-                        format: "CODE128",
-                        displayValue: true,
-                        width: 2,
-                        height: 40
-                    });
-                }
+                // Agregar oyentes de eventos a los botones de eliminar y editar
+                const deleteButtons = document.querySelectorAll(".delete-button");
+                deleteButtons.forEach((button) => {
+                    button.addEventListener("click", handleDelete);
+                });
+                const editButtons = document.querySelectorAll(".edit-button");
+                editButtons.forEach((button) => {
+                    button.addEventListener("click", handleEdit);
+                });
             }
 
             // Función para agregar o editar un producto en el inventario
@@ -231,42 +183,24 @@
                 a.click();
             }
 
-            // Configurar el escaneo de códigos de barras
-            const scanner = new Instascan.Scanner({ video: document.getElementById("camera") });
-            scanner.addListener("scan", function (content) {
-                manualBarcodeInput.value = content;
-            });
-
-            // Acceder a la cámara al hacer clic en el botón "Escanear Código de Barras"
-            scanButton.addEventListener("click", function () {
-                Instascan.Camera.getCameras().then(function (cameras) {
-                    if (cameras.length > 0) {
-                        scanner.start(cameras[0]);
-                    } else {
-                        console.error("No se encontraron cámaras disponibles.");
-                    }
-                }).catch(function (error) {
+            // Accede a la cámara del dispositivo y muestra la imagen en el elemento de video
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(function (stream) {
+                    const camera = document.getElementById("camera");
+                    camera.srcObject = stream;
+                })
+                .catch(function (error) {
                     console.error("Error al acceder a la cámara: " + error);
                 });
-            });
 
             // Escuchar eventos de botones
             addProductButton.addEventListener("click", addOrUpdateProduct);
             filterButton.addEventListener("click", handleFilter);
             exportDataButton.addEventListener("click", exportData);
-
-            // Escuchar eventos táctiles en lugar de eventos de clic
-            if ('ontouchstart' in window) {
-                addProductButton.addEventListener("touchstart", addOrUpdateProduct);
-                const deleteButtons = document.querySelectorAll(".delete-button");
-                deleteButtons.forEach((button) => {
-                    button.addEventListener("touchstart", handleDelete);
-                });
-                const editButtons = document.querySelectorAll(".edit-button");
-                editButtons.forEach((button) => {
-                    button.addEventListener("touchstart", handleEdit);
-                });
-            }
+            scanButton.addEventListener("click", () => {
+                alert("Función de escaneo no implementada en este ejemplo.");
+            });
+            generateBarcodeButton.addEventListener("click", generateBarcodeManually);
 
             // Mostrar el inventario y el historial al cargar la página
             renderInventory(inventory);
