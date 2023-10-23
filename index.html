@@ -246,6 +246,34 @@
             filterButton.addEventListener("click", handleFilter);
             exportDataButton.addEventListener("click", exportData);
 
+            // Escuchar eventos táctiles en lugar de eventos de clic
+if ('ontouchstart' in window) {
+    addProductButton.addEventListener("touchstart", addOrUpdateProduct);
+    deleteButtons.forEach((button) => {
+        button.addEventListener("touchstart", handleDelete);
+    });
+    editButtons.forEach((button) => {
+        button.addEventListener("touchstart", handleEdit);
+    });
+}
+
+// Escuchar evento "submit" para formularios en lugar de eventos de clic en botones
+document.getElementById("product-form").addEventListener("submit", function (e) {
+    e.preventDefault(); // Evita la recarga de la página
+    addOrUpdateProduct();
+});
+
+// Para la función de eliminar, asegúrate de que los botones de eliminar tengan una clase distinta
+// Ejemplo: <button class="delete-button" data-index="${index}">Eliminar</button>
+
+// Luego, escucha eventos táctiles en los botones de eliminar
+const deleteButtons = document.querySelectorAll(".delete-button");
+deleteButtons.forEach((button) => {
+    button.addEventListener("touchstart", handleDelete);
+});
+
+// Implementa el mismo enfoque para los botones de editar
+
             // Mostrar el inventario y el historial al cargar la página
             renderInventory(inventory);
             renderHistory(history);
