@@ -92,3 +92,44 @@ button:hover {
 #product-list li strong {
     font-weight: bold;
 }
+
+#scanner, #manual-entry, #inventory, #product-form, #search-filter, #history, #export {
+    background-color: white;
+    border: 1px solid #ddd;
+    margin: 10px;
+    padding: 10px;
+}
+
+#scanner, #manual-entry, #product-form, #search-filter, #export {
+    text-align: center;
+}
+
+#inventory, #history {
+    padding: 10px;
+    overflow: auto;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+ul li {
+    margin-bottom: 5px;
+}
+
+button {
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+video {
+    max-width: 100%;
+}
+
+#barcode {
+    max-width: 100%;
+}
