@@ -4,7 +4,6 @@
     <title>Sistema de Gestión de Inventario</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
     <script src="https://cdn.jsdelivr.net/jsbarcode/3.11.0/JsBarcode.all.min.js"></script>
-    <script src="https://cdn.rawgit.com/serratus/quaggaJS/0.12.0/dist/quagga.min.js"></script>
 </head>
 <body>
     <h1>Inventario</h1>
@@ -21,7 +20,7 @@
         <!-- Aquí se mostrará la lista de productos -->
     </div>
     <div id="product-form">
-        <h2>Agregar Producto</h2>
+        <h2>Agregar/Editar Producto</h2>
         <input type="text" id="product-name" placeholder="Nombre del producto">
         <input type="number" id="product-quantity" placeholder="Cantidad">
         <input type="number" id="product-price" placeholder="Precio">
@@ -38,40 +37,16 @@
             const manualBarcodeInput = document.getElementById("manual-barcode");
             const generateBarcodeButton = document.getElementById("generate-barcode");
             const barcodeSVG = document.getElementById("barcode");
-            const camera = document.getElementById("camera");
 
-            // Acceder a la cámara trasera del dispositivo
-            navigator.mediaDevices.enumerateDevices().then(function (devices) {
-                const rearCamera = devices.find(device => device.kind === "videoinput" && device.label.toLowerCase().includes("rear"));
-                if (rearCamera) {
-                    const constraints = { video: { deviceId: rearCamera.deviceId } };
-                    navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
-                        camera.srcObject = stream;
-                    }).catch(function (error) {
-                        console.error("Error al acceder a la cámara trasera: " + error);
-                    });
-                } else {
-                    console.error("No se encontró una cámara trasera.");
-                }
-            });
-
-            // Inicializar QuaggaJS para escanear códigos de barras
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: camera
-                },
-                decoder: {
-                    readers: ["code_128_reader"]
-                }
-            }, function(err) {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                Quagga.start();
-            });
+            // Accede a la cámara del dispositivo y muestra la imagen en el elemento de video
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    const camera = document.getElementById("camera");
+                    camera.srcObject = stream;
+                })
+                .catch(function (error) {
+                    console.error("Error al acceder a la cámara: " + error);
+                });
 
             // Array para almacenar productos
             let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
@@ -101,14 +76,23 @@
                 });
             }
 
-            // Función para agregar un producto en el inventario
-            function addProduct() {
+            // Función para agregar o editar un producto en el inventario
+            function addOrUpdateProduct() {
                 const name = productNameInput.value;
                 const quantity = parseInt(productQuantityInput.value);
                 const price = parseFloat(productPriceInput.value);
 
                 if (name && quantity >= 0 && price >= 0) {
                     const product = { name, quantity, price };
+                    const index = inventory.findIndex(p => p.name === name);
+
+                    if (index !== -1) {
+                        // Si ya existe, actualiza el producto
+                        inventory[index] = product;
+                    } else {
+                        // Si no existe, agrega el producto
+                        inventory.push(product);
+                    }
 
                     // Limpia los campos de entrada
                     productNameInput.value = "";
@@ -116,7 +100,6 @@
                     productPriceInput.value = "";
 
                     // Actualiza el almacenamiento local y muestra el inventario
-                    inventory.push(product);
                     localStorage.setItem("inventory", JSON.stringify(inventory));
                     renderInventory();
                 }
@@ -139,20 +122,32 @@
                 productPriceInput.value = product.price;
             }
 
-            // Escuchar eventos de botones
-            addProductButton.addEventListener("click", addProduct);
-            scanButton.addEventListener("click", function() {
-                Quagga.start();
-            });
-            generateBarcodeButton.addEventListener("click", function() {
+            // Función para generar un código de barras manualmente
+            function generateBarcodeManually() {
                 const manualBarcode = manualBarcodeInput.value;
+
                 if (manualBarcode) {
+                    // Agregar el código de barras a la lista de productos
+                    const product = { name: manualBarcode, quantity: 0, price: 0.00 };
+                    inventory.push(product);
+                    localStorage.setItem("inventory", JSON.stringify(inventory));
+                    renderInventory();
+                    manualBarcodeInput.value = "";
+
+                    // Generar el código de barras y mostrarlo
                     JsBarcode(barcodeSVG, manualBarcode, {
                         format: "CODE128",
                         displayValue: true
                     });
                 }
+            }
+
+            // Escuchar eventos de botones
+            addProductButton.addEventListener("click", addOrUpdateProduct);
+            scanButton.addEventListener("click", () => {
+                alert("Función de escaneo no implementada en este ejemplo.");
             });
+            generateBarcodeButton.addEventListener("click", generateBarcodeManually);
 
             // Mostrar el inventario al cargar la página
             renderInventory();
